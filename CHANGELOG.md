@@ -1,5 +1,9 @@
 # Changelog
 
+## 1.0.1 – 2026-10-25
+
+- HACS validation workflow added; no functional change. / HACS-ellenőrzés hozzáadva, működésbeli változás nincs.
+
 ## 1.0.0 – 2026-10-25
 
 - First public release / Első nyilvános kiadás.
