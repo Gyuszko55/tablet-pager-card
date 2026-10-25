@@ -3,13 +3,23 @@
 [![hacs_badge](https://img.shields.io/badge/HACS-Custom-41BDF5.svg)](https://hacs.xyz/docs/faq/custom_repositories)
 [![Validate](https://github.com/Gyuszko55/tablet-pager-card/actions/workflows/validate.yml/badge.svg)](https://github.com/Gyuszko55/tablet-pager-card/actions/workflows/validate.yml)
 
-Several Home Assistant cards in one place, gliding into each other. Swipe with a finger or the mouse, tap the dots, or let it advance by itself. Built for wall tablets, works anywhere.
+Several Home Assistant cards in one place, paging by themselves. Four ways to use it: pages that **slide** in (swipe or tap the dots), an **endless strip** of narrow cards, **tabs** with a progress line, and a vertical **ticker** of entity rows. Built for wall tablets, works anywhere.
 
 *[Magyar leírás lent ↓](#magyarul)*
 
 ![Tablet Pager Card demo](images/demo.gif)
 
+![Ticker, tabs and endless strip](images/modes.gif)
+
 ## Features
+
+| Mode | Settings | Typical use |
+|---|---|---|
+| Slide | `effect: slide` (default) | rooms, lights, irrigation… one card at a time |
+| Endless strip | `strip: true`, `card_width: 220` | narrow cards side by side, as many as the width allows (the last one partly); steps left, the card that leaves joins the end, after the last card the first comes again |
+| Tabs | `effect: fade`, `navigation: tabs` | calendar / mail / trackers: a tab bar, the line under the active tab shows the time left, optional badge |
+| Ticker | `effect: vertical` | name day, exchange rate, fuel price: rows roll upwards, tap opens the history |
+
 
 - **Swipe** left / right, the page follows the finger. Past 18 % of the width it pages, otherwise it slides back.
 - **Taps stay taps.** A swipe only starts after 12 px of mostly horizontal movement, so buttons on the pages keep working, and vertical scrolling of the dashboard is never blocked.
@@ -43,7 +53,12 @@ Several Home Assistant cards in one place, gliding into each other. Swipe with a
 |---|---|---|
 | `cards` | (required) | List of cards, one per page. |
 | `interval` | `30` | Seconds between automatic page changes. `0` turns it off. |
-| `show_dots` | `true` | Show the page dots under the card. |
+| `effect` | `slide` | `slide`, `fade` or `vertical`. |
+| `navigation` | `dots` (`none` with `vertical`) | `dots`, `tabs` or `none`. |
+| `strip` | `false` | Endless strip (only with `slide`). |
+| `card_width` | the card's own width | Strip: width of one card in px. Without it each card keeps its own width (for cards that have one; most built-in cards fill the available space, so set it for those). |
+| `tabs` | | With `navigation: tabs`: one entry per card, in the same order: `name`, `icon`, `badge` (an entity; shown when not 0 / off). |
+| `show_dots` | `true` | Older switch for the dots; `false` is the same as `navigation: none`. |
 
 ```yaml
 type: custom:tablet-pager-card
@@ -60,6 +75,76 @@ cards:
 
 **Height:** in a normal view the pager is as tall as its tallest page, so the dashboard does not jump when paging. In a fixed-height container (sections view with `grid_options: rows: …`, grid layout, custom panel) it fills the cell.
 
+### Endless strip
+
+```yaml
+type: custom:tablet-pager-card
+interval: 6
+strip: true
+card_width: 220
+navigation: none
+cards:
+  - type: tile
+    entity: climate.living_room
+  - type: tile
+    entity: climate.bedroom
+  - type: gauge
+    entity: sensor.outside_temperature
+  - type: tile
+    entity: lock.front_door
+```
+
+As many cards are shown as the width allows, the last one partly. The strip steps by the width of the leading card, so cards of different widths can be mixed. The card that leaves is moved to the end, so each card normally runs only once. When there are too few cards to fill the width, copies of the set are added (only as many as needed, recounted when the width changes), so after the last card the first one comes again.
+
+### Tabs
+
+```yaml
+type: custom:tablet-pager-card
+interval: 20
+effect: fade
+navigation: tabs
+tabs:
+  - { name: Calendar, icon: mdi:calendar-month }
+  - { name: Mail, icon: mdi:gmail, badge: sensor.gmail_unread }
+  - { name: Trackers, icon: mdi:map-marker-radius }
+cards:
+  - type: calendar
+    entities: [calendar.family]
+  - type: markdown
+    content: "{{ states('sensor.gmail_unread') }} unread"
+  - type: map
+    entities: [device_tracker.keys]
+```
+
+### Ticker
+
+A card without `type` is a simple **entity row**: icon, name and value in one line; tapping it opens the entity's details with its history. Ordinary cards can be mixed in.
+
+```yaml
+type: custom:tablet-pager-card
+interval: 5
+effect: vertical
+cards:
+  - entity: sensor.name_day
+    icon: mdi:cake-variant
+    color: "#ffd27a"
+  - entity: sensor.eur_huf
+    name: EUR
+    icon: mdi:currency-eur
+    color: "#9fc3ff"
+  - entity: sensor.fuel_price_95
+    name: Petrol 95
+    icon: mdi:gas-station
+    color: "#7fd18b"
+```
+
+| Row key | Description |
+|---|---|
+| `entity` | The entity to show (required). |
+| `name` | Name; default is the entity's friendly name. |
+| `icon` | Icon; default is the entity's own. |
+| `color` | Color of the icon and the value. |
+
 ### Hiding a page from your own card
 
 ```js
@@ -75,7 +160,18 @@ The pager checks `paused` on every state update.
 
 Több Home Assistant kártya egy helyen, egymást átúsztatva. Ujjal vagy egérrel oldalra húzva lapozható, a pöttyökre koppintva ugrik, és magától is továbblép. Fali tablethez készült, de bárhol használható.
 
-**Tudja:**
+**Négy mód:**
+
+| Mód | Beállítás | Mire jó |
+|---|---|---|
+| Beúszás | `effect: slide` (alap) | szobák, világítás, öntözés – egyszerre egy kártya |
+| Végtelen szalag | `strip: true`, `card_width: 220` | keskeny kártyák egymás mellett, annyi, amennyi kifér (az utolsóból egy darab); balra lép, a kifutó kártya a sor végére kerül, az utolsó után újra az első jön |
+| Fülek | `effect: fade`, `navigation: tabs` | naptár / levelek / jeladók: fülsor, az aktív fül alatti csík mutatja a hátralévő időt, a fülön számláló lehet |
+| Hírsor | `effect: vertical` | névnap, euró, benzinár: a sorok felfelé gördülnek, koppintásra az előzmények nyílnak meg |
+
+Ha egy lapnak nincs `type`-ja, egyszerű **entitás-sor** lesz belőle (`entity`, `name`, `icon`, `color`).
+
+**Tudja még:**
 
 - **Húzás:** a lap követi az ujjat. Ha a mozdulat a szélesség 18%-ánál nagyobb, lapoz, különben visszaúszik.
 - **A koppintás koppintás marad:** csak 12 képpontnyi, főleg vízszintes mozdulat után indul a húzás, így a lapokon lévő gombok működnek, és a vezérlőpult függőleges görgetése sem akad el.
@@ -94,7 +190,12 @@ Több Home Assistant kártya egy helyen, egymást átúsztatva. Ujjal vagy egér
 |---|---|---|---|
 | `kartyak` | `cards` | (kötelező) | A kártyák listája, laponként egy. |
 | `valtas_mp` | `interval` | `30` | Automatikus lapozás másodpercben, `0` = kikapcsolva. |
-| `pottyok` | `show_dots` | `true` | Pöttyök mutatása a kártya alatt. |
+| `hatas` | `effect` | `slide` | `slide`, `fade` vagy `vertical`. |
+| `navigacio` | `navigation` | `dots` | `dots`, `tabs` vagy `none`. |
+| `szalag` | `strip` | `false` | Végtelen szalag (csak `slide`-nál). |
+| `kartya_szelesseg` | `card_width` | a kártya saját szélessége | Szalagnál egy kártya szélessége képpontban. Nélküle minden kártya a saját szélességét tartja (a legtöbb gyári kártya kitölti a helyet, azoknál add meg). |
+| `fulek` | `tabs` | | Fül módban kártyánként: `name`, `icon`, `badge`. |
+| `pottyok` | `show_dots` | `true` | Régi kapcsoló, a `false` = `navigation: none`. |
 
 ```yaml
 type: custom:tablet-pager-card
