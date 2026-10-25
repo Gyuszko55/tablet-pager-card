@@ -1,3 +1,5 @@
+<p align="center"><img src="images/icon.png" alt="Tablet Pager Card icon" width="128"></p>
+
 # Tablet Pager Card
 
 [![hacs_badge](https://img.shields.io/badge/HACS-Custom-41BDF5.svg)](https://hacs.xyz/docs/faq/custom_repositories)
