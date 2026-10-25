@@ -1,6 +1,7 @@
 # Tablet Pager Card
 
 [![hacs_badge](https://img.shields.io/badge/HACS-Custom-41BDF5.svg)](https://hacs.xyz/docs/faq/custom_repositories)
+[![Validate](https://github.com/Gyuszko55/tablet-pager-card/actions/workflows/validate.yml/badge.svg)](https://github.com/Gyuszko55/tablet-pager-card/actions/workflows/validate.yml)
 
 Several Home Assistant cards in one place, gliding into each other. Swipe with a finger or the mouse, tap the dots, or let it advance by itself. Built for wall tablets, works anywhere.
 
